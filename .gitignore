@@ -1,0 +1,20 @@
+# conda
+.env
+*.conda
+*.condarc
+
+# data
+data/
+results/
+
+# fastq / bam / vcf
+*.fastq
+*.fastq.gz
+*.fq.gz
+*.bam
+*.bai
+*.vcf
+*.vcf.gz
+
+# logs
+*.log
