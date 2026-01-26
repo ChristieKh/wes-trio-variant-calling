@@ -3,18 +3,29 @@
 *.conda
 *.condarc
 
-# data
-data/
-results/
 
-# fastq / bam / vcf
+data/
+ref/
+results/**/*.bam
+results/**/*.bai
+results/**/*.vcf
+results/**/*.vcf.gz
+results/**/*.tbi
+
+# fastq 
 *.fastq
 *.fastq.gz
 *.fq.gz
-*.bam
-*.bai
-*.vcf
-*.vcf.gz
+
+
+# QC outputs
+*.html
+*.zip
+
+# MultiQC
+multiqc_data/
+multiqc_report.html
+
 
 # logs
 *.log

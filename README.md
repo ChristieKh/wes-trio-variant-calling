@@ -1,17 +1,34 @@
-WES trio analysis (father, mother, affected proband) on GRCh38.
-Variant calling and prioritization under Mendelian inheritance models.
+# WES Trio Analysis — Germline Variant Calling & Interpretation
 
-## Quality Control (FastQC & MultiQC)
+This project implements a reproducible **whole-exome sequencing (WES) trio workflow**
+following **GATK Best Practices**, with a focus on **germline variant discovery and interpretation**.
 
-Raw paired-end WES FASTQ files for all trio members (father, mother, proband) were assessed using FastQC and summarized with MultiQC.
+The analysis is inspired by published trio-WES studies and aims not only to build a technical pipeline,
+but also to explore the **biological and clinical interpretation** of identified variants.
 
-**Key observations:**
-- Overall per-base sequence quality was high across all samples.
-- Adapter contamination was not detected.
-- GC content profiles were consistent between all trio members.
-- A FAIL flag was observed for *Per Base Sequence Content*, which is expected for targeted exome sequencing due to capture bias.
-- All samples showed identical sequence content patterns, indicating a protocol-level effect rather than sample-specific issues.
+🔗 **Key reference paper:**  
+“Clinical phenotype and trio whole exome sequencing data from a patient with glycogen storage disease IV in Indonesia”  
+https://pmc.ncbi.nlm.nih.gov/articles/PMC11748688
 
-**Conclusion:**
-No trimming or additional filtering was applied. Data quality was deemed sufficient for downstream alignment and variant calling.
+## 🔄 Pipeline overview
+
+1. [x] Read alignment to the reference genome (BWA MEM)
+2. [x] BAM sorting and indexing
+3. [x] Read group assignment (Picard)
+4. [ ] PCR duplicate marking (Picard MarkDuplicates)
+5. [ ] Base Quality Score Recalibration (BQSR)
+6. [ ] Variant calling (GATK HaplotypeCaller, gVCF mode)
+7. [ ] Joint genotyping of the trio
+8. [ ] Variant filtering and interpretation
+
+## 🧠 Interpretation focus
+
+This project emphasizes:
+- **de novo variants**
+- recessive inheritance patterns
+- genotype–phenotype reasoning
+- comparison with diagnostic yields reported in trio-WES studies
+
+Variant interpretation will be performed using public databases
+and clinical genetics principles.
 
