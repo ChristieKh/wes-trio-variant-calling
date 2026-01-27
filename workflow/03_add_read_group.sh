@@ -34,4 +34,4 @@ for SAMPLE in "${SAMPLES[@]}"; do
   samtools view -H "${OUT_BAM}" | grep -q "^@RG" || { echo "ERROR: no @RG in ${OUT_BAM}" >&2; exit 1; }
 done
 
-echo "[03] Done."
+echo "Step [03] Is Done."
