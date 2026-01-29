@@ -15,8 +15,8 @@ https://pmc.ncbi.nlm.nih.gov/articles/PMC11748688
 1. [x] Read alignment to the reference genome (BWA MEM)
 2. [x] BAM sorting and indexing
 3. [x] Read group assignment (Picard)
-4. [ ] PCR duplicate marking (Picard MarkDuplicates)
-5. [ ] Base Quality Score Recalibration (BQSR)
+4. [x] PCR duplicate marking (Picard MarkDuplicates)
+5. [x] Base Quality Score Recalibration (BQSR)
 6. [ ] Variant calling (GATK HaplotypeCaller, gVCF mode)
 7. [ ] Joint genotyping of the trio
 8. [ ] Variant filtering and interpretation
