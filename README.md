@@ -12,14 +12,14 @@ https://pmc.ncbi.nlm.nih.gov/articles/PMC11748688
 
 ## 🔄 Pipeline overview
 
- [x] Read alignment to the reference genome (BWA MEM)
- [x] BAM sorting and indexing
- [x] Read group assignment (Picard)
- [x] PCR duplicate marking (Picard MarkDuplicates)
- [x] Base Quality Score Recalibration (BQSR)
- [x] Variant calling (GATK HaplotypeCaller, gVCF mode)
- [ ] Joint genotyping of the trio
- [ ] Variant filtering and interpretation
+- [x] Read alignment to the reference genome (BWA MEM)
+- [x] BAM sorting and indexing
+- [x] Read group assignment (Picard)
+- [x] PCR duplicate marking (Picard MarkDuplicates)
+- [x] Base Quality Score Recalibration (BQSR)
+- [x] Variant calling (GATK HaplotypeCaller, gVCF mode)
+- [ ] Joint genotyping of the trio
+- [ ] Variant filtering and interpretation
 
 ## 🧠 Interpretation focus
 
