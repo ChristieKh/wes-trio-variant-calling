@@ -18,8 +18,8 @@ https://pmc.ncbi.nlm.nih.gov/articles/PMC11748688
 - [x] PCR duplicate marking (Picard MarkDuplicates)
 - [x] Base Quality Score Recalibration (BQSR)
 - [x] Variant calling (GATK HaplotypeCaller, gVCF mode)
-- [ ] Joint genotyping of the trio
-- [ ] Variant filtering and interpretation
+- [x] Joint genotyping of the trio
+- [x] Variant filtering and interpretation
 
 ## 🧠 Interpretation focus
 
