@@ -11,6 +11,7 @@ results/**/*.bai
 results/**/*.vcf
 results/**/*.vcf.gz
 results/**/*.tbi
+results/
 
 # fastq 
 *.fastq
@@ -29,3 +30,8 @@ multiqc_report.html
 
 # logs
 *.log
+logs/
+
+
+# tools
+tools/
