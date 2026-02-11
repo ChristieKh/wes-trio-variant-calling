@@ -17,12 +17,8 @@ query GnomadVariant($variantId: String!, $datasetId: DatasetId!) {
     exome { ac an }
     genome { ac an }
     joint {
-      ac
-      an
-      fafmax {
-        faf95_max
-        faf95_max_gen_anc
-      }
+      faf95 { popmax popmax_population }
+      faf99 { popmax popmax_population }
     }
   }
 }
@@ -234,13 +230,18 @@ def main():
             joint = v.get("joint") or {}
             fafmax = joint.get("fafmax") or {}
 
+            faf95 = joint.get("faf95") or {}
+            faf99 = joint.get("faf99") or {}
+            
+            use_faf = faf95 if faf95 else faf99
+
             ex_af = ac_an_to_af(ex.get("ac"), ex.get("an"))
             ge_af = ac_an_to_af(ge.get("ac"), ge.get("an"))
 
             row["gnomAD_exome_af"] = "." if ex_af is None else f"{ex_af:.6g}"
             row["gnomAD_genome_af"] = "." if ge_af is None else f"{ge_af:.6g}"
-            row["gnomAD_joint_faf95_popmax"] = fafmax.get("faf95_max", ".") if fafmax else "."
-            row["gnomAD_joint_faf95_popmax_population"] = fafmax.get("faf95_max_gen_anc", ".") if fafmax else "."
+            row["gnomAD_joint_faf95_popmax"] = use_faf.get("popmax", ".") if use_faf else "."
+            row["gnomAD_joint_faf95_popmax_population"] = use_faf.get("popmax_population", ".") if use_faf else "."
             row["gnomAD_status"] = status
 
             if v:

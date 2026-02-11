@@ -77,7 +77,6 @@ echo "" | tee -a "$LOG"
 echo "[2] Merging with evidence tables (optional)" | tee -a "$LOG"
 
 # Optional: merge with original evidence tables to add inheritance info
-# This step can be done in Python/R if you want more control
 
 echo "" | tee -a "$LOG"
 echo "=== Step 12 complete ===" | tee -a "$LOG"
