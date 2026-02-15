@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import csv
 import json
 import os
@@ -21,51 +22,55 @@ query GnomadVariant($variantId: String!, $datasetId: DatasetId!) {
 }
 """
 
-INPUT_DIR = "results/12_model_tables"
-OUTPUT_DIR = "results/13_gnomad"
-CACHE_FILE = "results/13_gnomad/gnomad_cache.jsonl"
-DATASET = "gnomad_r4"
+DEFAULT_DATASET = "gnomad_r4"
+DEFAULT_CACHE_FILE = "results/13_gnomad/gnomad_cache.jsonl"
 
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def norm_chrom(chrom: str) -> str:
+    chrom = (chrom or "").strip()
     if chrom.startswith("chr"):
         chrom = chrom[3:]
     if chrom == "M":
         chrom = "MT"
     return chrom
 
-def make_variant_id(row):
+
+def make_variant_id(row: Dict[str, str]) -> str:
     return f"{norm_chrom(row['CHROM'])}-{row['POS']}-{row['REF']}-{row['ALT']}"
 
+
 def ac_an_to_af(ac, an):
-    if not ac or not an or an == 0:
+    if ac is None or an is None or an == 0:
         return None
     return ac / an
 
-# Load cache
-cache: Dict[str, dict] = {}
-if os.path.exists(CACHE_FILE):
-    with open(CACHE_FILE) as f:
-        for line in f:
-            obj = json.loads(line.strip())
-            cache[obj["variant_id"]] = obj
 
-def cache_put(obj):
-    with open(CACHE_FILE, "a") as f:
+def load_cache(cache_file: str) -> Dict[str, dict]:
+    cache: Dict[str, dict] = {}
+    if os.path.exists(cache_file):
+        with open(cache_file, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                obj = json.loads(line)
+                vid = obj.get("variant_id")
+                if vid:
+                    cache[vid] = obj
+    return cache
+
+
+def cache_put(cache_file: str, obj: dict):
+    os.makedirs(os.path.dirname(cache_file), exist_ok=True)
+    with open(cache_file, "a", encoding="utf-8") as f:
         f.write(json.dumps(obj) + "\n")
 
-session = requests.Session()
 
-def fetch_variant(variant_id):
+def fetch_variant(session: requests.Session, variant_id: str, dataset: str) -> dict:
     payload = {
         "query": QUERY,
-        "variables": {
-            "variantId": variant_id,
-            "datasetId": DATASET
-        }
+        "variables": {"variantId": variant_id, "datasetId": dataset},
     }
-
     try:
         r = session.post(API_URL, json=payload, timeout=30)
         r.raise_for_status()
@@ -75,7 +80,6 @@ def fetch_variant(variant_id):
             return {"status": "GRAPHQL_ERROR", "data": {}}
 
         variant = j.get("data", {}).get("variant")
-
         if variant is None:
             return {"status": "NOT_FOUND", "data": {}}
 
@@ -86,43 +90,68 @@ def fetch_variant(variant_id):
     except Exception:
         return {"status": "ERROR", "data": {}}
 
-# Process each model table
-for fname in os.listdir(INPUT_DIR):
-    if not fname.endswith("_annotated.tsv"):
-        continue
 
-    in_path = os.path.join(INPUT_DIR, fname)
-    out_path = os.path.join(OUTPUT_DIR, fname.replace("_annotated.tsv", "_annotated_gnomad.tsv"))
+def main():
+    ap = argparse.ArgumentParser(
+        description="Step 13: Annotate TSV variants with gnomAD (GraphQL API). Requires CHROM POS REF ALT columns."
+    )
+    ap.add_argument("--in", dest="in_tsv", required=True, help="Input TSV (must contain CHROM POS REF ALT)")
+    ap.add_argument("--out", dest="out_tsv", required=True, help="Output TSV path")
+    ap.add_argument("--dataset", default=DEFAULT_DATASET, help=f"gnomAD datasetId (default: {DEFAULT_DATASET})")
+    ap.add_argument("--cache", default=DEFAULT_CACHE_FILE, help=f"Cache file jsonl (default: {DEFAULT_CACHE_FILE})")
+    ap.add_argument("--sleep", type=float, default=0.6, help="Sleep seconds between API calls (default: 0.6)")
+    args = ap.parse_args()
 
-    print(f"\nProcessing {fname}")
+    os.makedirs(os.path.dirname(args.out_tsv), exist_ok=True)
 
-    with open(in_path) as fin, open(out_path, "w", newline="") as fout:
+    cache = load_cache(args.cache)
+    session = requests.Session()
+
+    print(f"Input : {args.in_tsv}")
+    print(f"Output: {args.out_tsv}")
+    print(f"Cache : {args.cache} (loaded {len(cache)} entries)")
+    print(f"Dataset: {args.dataset}")
+    print("")
+
+    with open(args.in_tsv, encoding="utf-8") as fin, open(args.out_tsv, "w", newline="", encoding="utf-8") as fout:
         reader = csv.DictReader(fin, delimiter="\t")
+        if reader.fieldnames is None:
+            raise SystemExit("ERROR: input TSV has no header")
+
+        required = {"CHROM", "POS", "REF", "ALT"}
+        missing = sorted(list(required - set(reader.fieldnames)))
+        if missing:
+            raise SystemExit(f"ERROR: missing required columns: {missing}")
+
         fieldnames = reader.fieldnames + [
             "gnomAD_exome_af",
             "gnomAD_genome_af",
             "gnomAD_faf95_popmax",
             "gnomAD_faf95_popmax_population",
-            "gnomAD_status"
+            "gnomAD_status",
         ]
-
         writer = csv.DictWriter(fout, fieldnames=fieldnames, delimiter="\t")
         writer.writeheader()
 
+        n = 0
+        n_api = 0
+
         for row in reader:
+            n += 1
             vid = make_variant_id(row)
 
             if vid in cache:
                 result = cache[vid]
             else:
-                result = fetch_variant(vid)
+                result = fetch_variant(session, vid, args.dataset)
                 result["variant_id"] = vid
                 cache[vid] = result
-                cache_put(result)
-                time.sleep(0.6)
+                cache_put(args.cache, result)
+                n_api += 1
+                time.sleep(args.sleep)
 
             status = result["status"]
-            data = result.get("data", {})
+            data = result.get("data", {}) or {}
 
             ex_af = "."
             ge_af = "."
@@ -155,6 +184,8 @@ for fname in os.listdir(INPUT_DIR):
 
             writer.writerow(row)
 
-    print(f"Written -> {out_path}")
+    print(f"Done. Rows: {n}, API calls: {n_api} (rest from cache)")
 
-print("\nStep 13 gnomAD complete.")
+
+if __name__ == "__main__":
+    main()
