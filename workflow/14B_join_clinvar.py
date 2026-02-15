@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-import os
-import sys
+import argparse
 import csv
-
-# args: IN_DIR LOOKUP_TSV OUT_DIR
-in_dir, lookup_path, out_dir = sys.argv[1], sys.argv[2], sys.argv[3]
+import glob
+import os
+from typing import Dict, Tuple
 
 def norm_chrom(c: str) -> str:
     c = (c or "").strip()
@@ -14,16 +13,7 @@ def norm_chrom(c: str) -> str:
         c = "MT"
     return c
 
-# Load lookup keyed by normalized (chrom,pos,ref,alt)
-lookup = {}
-with open(lookup_path, newline="", encoding="utf-8") as f:
-    r = csv.DictReader(f, delimiter="\t")
-    for row in r:
-        chrom = norm_chrom(row.get("CHROM", ""))
-        key = (chrom, row.get("POS", ""), row.get("REF", ""), row.get("ALT", ""))
-        lookup[key] = row
-
-add_cols = [
+ADD_COLS = [
     "ClinVar_CLNSIG",
     "ClinVar_CLNREVSTAT",
     "ClinVar_CLNDN",
@@ -32,22 +22,38 @@ add_cols = [
     "ClinVar_ID",
 ]
 
-def join_one(path_in: str, path_out: str):
-    with open(path_in, newline="", encoding="utf-8") as fin, \
-         open(path_out, "w", newline="", encoding="utf-8") as fout:
+def load_lookup(lookup_path: str) -> Dict[Tuple[str, str, str, str], Dict[str, str]]:
+    lookup: Dict[Tuple[str, str, str, str], Dict[str, str]] = {}
+    with open(lookup_path, newline="", encoding="utf-8") as f:
+        r = csv.DictReader(f, delimiter="\t")
+        for row in r:
+            chrom = norm_chrom(row.get("CHROM", ""))
+            key = (chrom, row.get("POS", ""), row.get("REF", ""), row.get("ALT", ""))
+            lookup[key] = row
+    return lookup
+
+def join_one(path_in: str, path_out: str, lookup: Dict[Tuple[str, str, str, str], Dict[str, str]]):
+    with open(path_in, newline="", encoding="utf-8") as fin, open(path_out, "w", newline="", encoding="utf-8") as fout:
         r = csv.DictReader(fin, delimiter="\t")
-        out_fields = (r.fieldnames or []) + add_cols
+        if r.fieldnames is None:
+            raise RuntimeError(f"Missing header: {path_in}")
+
+        required = {"CHROM", "POS", "REF", "ALT"}
+        missing = sorted(list(required - set(r.fieldnames)))
+        if missing:
+            raise RuntimeError(f"Missing required columns in {path_in}: {missing}")
+
+        out_fields = list(r.fieldnames) + ADD_COLS
         w = csv.DictWriter(fout, fieldnames=out_fields, delimiter="\t", extrasaction="ignore")
         w.writeheader()
 
-        total = hits = 0
+        total = 0
+        hits = 0
+
         for row in r:
             total += 1
             chrom = norm_chrom(row.get("CHROM", ""))
-            pos = row.get("POS", "")
-            ref = row.get("REF", "")
-            alt = row.get("ALT", "")
-            key = (chrom, pos, ref, alt)
+            key = (chrom, row.get("POS", ""), row.get("REF", ""), row.get("ALT", ""))
             cv = lookup.get(key)
 
             if cv:
@@ -57,7 +63,6 @@ def join_one(path_in: str, path_out: str):
                 row["ClinVar_CLNDN"] = cv.get("CLNDN", ".") or "."
                 row["ClinVar_CLNDISDB"] = cv.get("CLNDISDB", ".") or "."
                 row["ClinVar_CLNVC"] = cv.get("CLNVC", ".") or "."
-                # ClinVar ID может быть в RS или в ID — мы в lookup кладём RS
                 row["ClinVar_ID"] = cv.get("RS", ".") or "."
             else:
                 row["ClinVar_CLNSIG"] = "."
@@ -71,13 +76,32 @@ def join_one(path_in: str, path_out: str):
 
     print(f"{os.path.basename(path_in)} -> {os.path.basename(path_out)} | clinvar_hits={hits}/{total}")
 
-os.makedirs(out_dir, exist_ok=True)
+def main():
+    ap = argparse.ArgumentParser(
+        description="Join ClinVar lookup TSV into candidate TSV files by (CHROM,POS,REF,ALT)."
+    )
+    ap.add_argument("in_dir", help="Input directory with TSV files")
+    ap.add_argument("lookup_tsv", help="ClinVar lookup TSV (CHROM POS REF ALT ...)")
+    ap.add_argument("out_dir", help="Output directory")
+    ap.add_argument("--pattern", default="*rare*.tsv", help="Glob pattern for input TSVs (default: *rare*.tsv)")
+    ap.add_argument("--suffix", default="_clinvar.tsv", help="Output suffix (default: _clinvar.tsv)")
+    args = ap.parse_args()
 
-for fn in os.listdir(in_dir):
-    if not fn.endswith(".tsv"):
-        continue
-    if "rare" not in fn:
-        continue
-    path_in = os.path.join(in_dir, fn)
-    path_out = os.path.join(out_dir, fn.replace(".tsv", "_clinvar.tsv"))
-    join_one(path_in, path_out)
+    os.makedirs(args.out_dir, exist_ok=True)
+
+    files = sorted(glob.glob(os.path.join(args.in_dir, args.pattern)))
+    if not files:
+        raise SystemExit(f"ERROR: no input TSV files matched: {os.path.join(args.in_dir, args.pattern)}")
+
+    lookup = load_lookup(args.lookup_tsv)
+    print(f"lookup_records={len(lookup)} from {args.lookup_tsv}")
+
+    for path_in in files:
+        base = os.path.basename(path_in)
+        if base.endswith(".tsv"):
+            base = base[:-4]
+        path_out = os.path.join(args.out_dir, base + args.suffix)
+        join_one(path_in, path_out, lookup)
+
+if __name__ == "__main__":
+    main()
