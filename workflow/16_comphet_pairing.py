@@ -11,7 +11,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 OUT_PAIRS = os.path.join(OUT_DIR, "comphet_pairs.tsv")
 OUT_VARIANTS = os.path.join(OUT_DIR, "comphet_variants.tsv")
 
-# --- QC thresholds (edit here) ---
+# --- QC thresholds  ---
 MIN_PROBAND_DP = 10
 MIN_PROBAND_GQ = 20
 MIN_PARENT_DP = 8
