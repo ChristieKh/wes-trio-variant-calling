@@ -6,7 +6,6 @@ from typing import Optional
 IN_DIR = "results/13_gnomad"
 OUT_DIR = "results/13B_gnomad_filtered"
 
-# Thresholds for rare Mendelian models
 THRESHOLDS = {
     "de_novo": 1e-4,
     "x_linked": 1e-4,
@@ -16,27 +15,24 @@ THRESHOLDS = {
 }
 
 def parse_float(x: str) -> Optional[float]:
-    if x is None:
-        return None
-    x = x.strip()
-    if x == "" or x == ".":
+    if not x or x == ".":
         return None
     try:
         return float(x)
-    except Exception:
+    except:
         return None
 
 def max_af(row) -> Optional[float]:
     vals = [
-        parse_float(row.get("gnomAD_exome_af", ".")),
-        parse_float(row.get("gnomAD_genome_af", ".")),
-        parse_float(row.get("gnomAD_faf95_popmax", ".")),
+        parse_float(row.get("gnomAD_exome_af")),
+        parse_float(row.get("gnomAD_genome_af")),
+        parse_float(row.get("gnomAD_faf95_popmax")),
     ]
     vals = [v for v in vals if v is not None]
     return max(vals) if vals else None
 
 def model_from_filename(fn: str) -> str:
-    for m in ("de_novo", "ar_homo", "ar_het", "x_linked", "comphet"):
+    for m in THRESHOLDS.keys():
         if fn.startswith(m + "_"):
             return m
     return "unknown"
@@ -60,29 +56,37 @@ for fn in os.listdir(IN_DIR):
          open(out_path, "w", newline="", encoding="utf-8") as fout:
 
         r = csv.DictReader(fin, delimiter="\t")
-        fieldnames = (r.fieldnames or []) + ["gnomAD_max_af", "gnomAD_filter"]
+        fields = r.fieldnames + ["gnomAD_max_af", "gnomAD_filter"]
 
-        w = csv.DictWriter(fout, fieldnames=fieldnames, delimiter="\t", extrasaction="ignore")
+        w = csv.DictWriter(fout, fieldnames=fields, delimiter="\t", extrasaction="ignore")
         w.writeheader()
 
-        total = 0
-        kept = 0
+        total = kept = 0
 
         for row in r:
             total += 1
+            status = row.get("gnomAD_status", "")
             maf = max_af(row)
+
             row["gnomAD_max_af"] = "." if maf is None else f"{maf:.6g}"
 
-            # Variants not found in gnomAD are treated as rare
-            keep = (maf is None) or (maf <= thr)
+            if status == "OK":
+                keep = (maf is None) or (maf <= thr)
+                row["gnomAD_filter"] = "PASS" if keep else "FAIL"
 
-            row["gnomAD_filter"] = "PASS" if keep else "FAIL"
+            elif status == "NOT_FOUND":
+                keep = True
+                row["gnomAD_filter"] = "PASS"
+
+            else:
+                # API errors: keep but flag
+                keep = True
+                row["gnomAD_filter"] = "API_ERROR"
 
             if keep:
                 kept += 1
                 w.writerow(row)
 
-    print(f"[{model}] {fn}: kept {kept}/{total} (max_af <= {thr} OR NOT_FOUND) -> {out_path}")
+    print(f"[{model}] {fn}: kept {kept}/{total} -> {out_path}")
 
 print("Step 13B complete.")
-
