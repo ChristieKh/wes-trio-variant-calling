@@ -1,11 +1,22 @@
 #!/usr/bin/env python3
 import csv
 import os
+import logging
 from typing import Dict, List, Optional, Tuple
 
 IN_DIR = "results/14_clinvar"
 OUT_DIR = "results/15_shortlists"
+LOG_FILE = "logs/15_shortlists.log"
+
 os.makedirs(OUT_DIR, exist_ok=True)
+os.makedirs("logs", exist_ok=True)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.FileHandler(LOG_FILE, encoding="utf-8"), logging.StreamHandler()],
+)
+log = logging.getLogger("step15")
 
 TOP_N = 200
 
@@ -18,6 +29,8 @@ DROP_EFFECT_SUBSTR = (
     "3_prime_utr_variant",
     "non_coding_transcript",
 )
+
+API_ERROR_STATUSES = {"GRAPHQL_ERROR", "HTTP_ERROR", "ERROR", "TIMEOUT"}
 
 def parse_float(x: str) -> Optional[float]:
     if x is None:
@@ -43,26 +56,15 @@ def gq_int(x: str) -> int:
         return 0
 
 def gq_sum(row: Dict[str, str]) -> int:
-    return gq_int(row.get("GEN[0].GQ", "0")) + gq_int(row.get("GEN[1].GQ", "0")) + gq_int(row.get("GEN[2].GQ", "0"))
+    return (
+        gq_int(row.get("GEN[0].GQ", "0")) +
+        gq_int(row.get("GEN[1].GQ", "0")) +
+        gq_int(row.get("GEN[2].GQ", "0"))
+    )
 
-def should_drop_by_effect(text: str) -> bool:
-    t = (text or "").lower()
+def should_drop_by_effect(effect: str) -> bool:
+    t = (effect or "").lower()
     return any(k in t for k in DROP_EFFECT_SUBSTR)
-
-def extract_ann_impact(row: Dict[str, str]) -> str:
-    # Prefer explicit column if it's clean; otherwise parse from ANN-like text
-    imp = (row.get("ANN[0].IMPACT") or "").strip().upper()
-    if imp in {"HIGH", "MODERATE", "LOW", "MODIFIER"}:
-        return imp
-
-    ann_text = row.get("ANN[0].EFFECT", "") or row.get("ANN", "")
-    if not ann_text or ann_text == ".":
-        return ""
-    first = ann_text.split(",")[0]
-    parts = first.split("|")
-    if len(parts) >= 3:
-        return parts[2].strip().upper()
-    return ""
 
 def impact_rank(imp: str) -> int:
     return {"HIGH": 3, "MODERATE": 2, "LOW": 1, "MODIFIER": 0}.get((imp or "").upper(), 0)
@@ -92,25 +94,42 @@ def clinvar_rank(sig: str) -> int:
         "benign": -2,
     }.get(b, 0)
 
-def sort_key(row: Dict[str, str]) -> Tuple[int, int, float, int]:
-    maf = parse_float(row.get("gnomAD_max_af", "."))
-    maf_key = -(maf if maf is not None else 1.0)  # smaller AF is better
-    imp = extract_ann_impact(row)
+def max_af(row) -> Optional[float]:
+    vals = [
+        parse_float(row.get("gnomAD_exome_af", ".")),
+        parse_float(row.get("gnomAD_genome_af", ".")),
+        parse_float(row.get("gnomAD_faf95_popmax", ".")),
+        parse_float(row.get("gnomAD_max_af", ".")),  # if already computed
+    ]
+    vals = [v for v in vals if v is not None]
+    return max(vals) if vals else None
+
+def api_penalty(row: Dict[str, str]) -> int:
+    # Slight penalty so API_ERROR doesn't dominate TopN
+    st = (row.get("gnomAD_status") or "").strip()
+    return -1 if st in API_ERROR_STATUSES else 0
+
+def sort_key(row: Dict[str, str]) -> Tuple[int, int, float, int, int]:
+    maf = max_af(row)
+    maf_sort = 0.0 if maf is None else maf          # None treated as rare (best)
+    imp = (row.get("ANN[0].IMPACT") or "").strip().upper()
     return (
         clinvar_rank(row.get("ClinVar_CLNSIG", ".")),
         impact_rank(imp),
-        maf_key,
+        -maf_sort,                                  # smaller AF => larger key
         gq_sum(row),
+        api_penalty(row),
     )
 
 def write_tsv(path: str, header: List[str], rows: List[Dict[str, str]]):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", newline="", encoding="utf-8") as out:
         w = csv.DictWriter(out, fieldnames=header, delimiter="\t", extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)
 
 def main():
-    summary = []
+    summary_lines = []
 
     for fn in sorted(os.listdir(IN_DIR)):
         if not fn.endswith("_clinvar.tsv"):
@@ -126,49 +145,61 @@ def main():
             continue
 
         model = (rows[0].get("inheritance") or "").strip() or fn.replace("_clinvar.tsv", "")
+        model_dir = os.path.join(OUT_DIR, model)
+        os.makedirs(model_dir, exist_ok=True)
 
         total = len(rows)
-        pass_rows = [x for x in rows if x.get("gnomAD_filter", "") == "PASS"]
-        after_pass = len(pass_rows)
 
-        # Views (no phenotype)
+        # Keep PASS and API_ERROR, but drop explicit FAIL if present
+        pass_rows = []
+        for x in rows:
+            gf = (x.get("gnomAD_filter") or "").strip()
+            if gf == "FAIL":
+                continue
+            pass_rows.append(x)
+
+        # Optional model-specific sanity: ar_homo must be hom-alt in proband
+        if model == "ar_homo":
+            pass_rows = [x for x in pass_rows if gt_is_hom_alt(x.get("GEN[2].GT", ""))]
+
         cleaned = []
         for row in pass_rows:
-            ann_text = row.get("ANN[0].EFFECT", "") or row.get("ANN", "")
-            if should_drop_by_effect(ann_text):
+            effect = row.get("ANN[0].EFFECT", "") or ""
+            if should_drop_by_effect(effect):
                 continue
             cleaned.append(row)
 
-        imp_high = [x for x in cleaned if extract_ann_impact(x) == "HIGH"]
-        imp_mod  = [x for x in cleaned if extract_ann_impact(x) == "MODERATE"]
+        imp_high = [x for x in cleaned if (x.get("ANN[0].IMPACT") or "").upper() == "HIGH"]
+        imp_mod  = [x for x in cleaned if (x.get("ANN[0].IMPACT") or "").upper() == "MODERATE"]
 
         cv_path = [x for x in cleaned if clinvar_bucket(x.get("ClinVar_CLNSIG", ".")) in {"pathogenic", "likely_pathogenic"}]
         cv_conf = [x for x in cleaned if clinvar_bucket(x.get("ClinVar_CLNSIG", ".")) == "conflicting"]
 
-        # TopN
         ranked = cleaned[:]
         ranked.sort(key=sort_key, reverse=True)
         topn = ranked[:TOP_N]
 
         stem = fn.replace("_clinvar.tsv", "")
-        write_tsv(os.path.join(OUT_DIR, f"{stem}_top{TOP_N}.tsv"), header, topn)
-        write_tsv(os.path.join(OUT_DIR, f"{stem}_clinvar_path.tsv"), header, cv_path)
-        write_tsv(os.path.join(OUT_DIR, f"{stem}_clinvar_conflicting.tsv"), header, cv_conf)
-        write_tsv(os.path.join(OUT_DIR, f"{stem}_high_impact.tsv"), header, imp_high)
-        write_tsv(os.path.join(OUT_DIR, f"{stem}_moderate.tsv"), header, imp_mod)
 
-        summary.append(
-            f"{stem} | model={model} total={total} pass={after_pass} cleaned={len(cleaned)} "
+        write_tsv(os.path.join(model_dir, f"{stem}_top{TOP_N}.tsv"), header, topn)
+        write_tsv(os.path.join(model_dir, f"{stem}_clinvar_path.tsv"), header, cv_path)
+        write_tsv(os.path.join(model_dir, f"{stem}_clinvar_conflicting.tsv"), header, cv_conf)
+        write_tsv(os.path.join(model_dir, f"{stem}_high_impact.tsv"), header, imp_high)
+        write_tsv(os.path.join(model_dir, f"{stem}_moderate.tsv"), header, imp_mod)
+
+        summary_lines.append(
+            f"{stem} | model={model} total={total} kept_after_gnomad={len(pass_rows)} cleaned={len(cleaned)} "
             f"clinvar_path={len(cv_path)} clinvar_conflicting={len(cv_conf)} high={len(imp_high)} moderate={len(imp_mod)} top={len(topn)}"
         )
 
+        log.info(summary_lines[-1])
+
     summary_path = os.path.join(OUT_DIR, "summary_step15.txt")
     with open(summary_path, "w", encoding="utf-8") as out:
-        out.write("\n".join(summary) + "\n")
+        out.write("\n".join(summary_lines) + "\n")
 
-    print(f"Wrote summary -> {summary_path}")
-    for line in summary:
-        print(line)
+    log.info(f"Wrote summary -> {summary_path}")
+    log.info(f"Log -> {LOG_FILE}")
 
 if __name__ == "__main__":
     main()
