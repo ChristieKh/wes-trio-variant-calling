@@ -2,10 +2,10 @@
 set -euo pipefail
 
 # ------------------------------------------------------------
-# Step 12: Build per-model annotated TSV tables 
-# - Uses one annotated source VCF produced by Step 11
+# Step 12: Build per-model annotated TSV tables
+# - Uses one annotated source VCF produced by Step 11 (snpEff ANN in INFO/ANN)
 # - Subsets by regions derived from Step 10 evidence-pass TSVs
-# - Exports unified TSV schema with snpEff ANN[0] + trio genotypes
+# - Exports unified TSV schema with parsed snpEff ANN (best annotation) + trio genotypes
 # Sample order is enforced earlier: sample[0]=father, sample[1]=mother, sample[2]=proband
 # ------------------------------------------------------------
 
@@ -13,6 +13,7 @@ ANN_VCF="results/11_annotation/trio.filtered.snpeff.vcf.gz"
 EVID_DIR="results/10_candidates_evidence"
 OUT_DIR="results/12_model_tables"
 LOG_DIR="logs"
+ANN_PARSER="workflow/12_split_snpeff_ann.py"
 
 mkdir -p "$OUT_DIR" "$LOG_DIR"
 LOG="$LOG_DIR/12_model_tables.log"
@@ -22,11 +23,17 @@ echo "=== Step 12: Build per-model annotated tables ===" | tee -a "$LOG"
 echo "Annotated VCF: $ANN_VCF" | tee -a "$LOG"
 echo "Evidence dir:  $EVID_DIR" | tee -a "$LOG"
 echo "Output dir:    $OUT_DIR" | tee -a "$LOG"
+echo "ANN parser:    $ANN_PARSER" | tee -a "$LOG"
 
 if [[ ! -f "$ANN_VCF" ]]; then
   echo "ERROR: Annotated VCF not found: $ANN_VCF" | tee -a "$LOG"
   exit 1
 fi
+if [[ ! -f "$ANN_PARSER" ]]; then
+  echo "ERROR: ANN parser not found: $ANN_PARSER" | tee -a "$LOG"
+  exit 1
+fi
+
 if [[ ! -f "${ANN_VCF}.tbi" ]]; then
   echo "[0] Index annotated VCF" | tee -a "$LOG"
   tabix -p vcf "$ANN_VCF"
@@ -40,12 +47,14 @@ fi
 
 MODELS=(de_novo ar_homo ar_het x_linked)
 
-# Header + bcftools query format
+# --- bcftools query format ---
+# We export raw ANN string into one column ANN_RAW, then parse it in Python
 QFMT='%CHROM\t%POS\t%ID\t%REF\t%ALT\t%QUAL\t%FILTER'\
-'\t%ANN[0].GENE\t%ANN[0].GENEID\t%ANN[0].FEATUREID\t%ANN[0].EFFECT\t%ANN[0].IMPACT\t%ANN[0].HGVS_C\t%ANN[0].HGVS_P\t%ANN[0].CDNA_POS\t%ANN[0].CDS_POS\t%ANN[0].AA_POS'\
+'\t%INFO/ANN'\
 '[\t%GT\t%AD\t%DP\t%GQ]\n'
 
-HEADER="inheritance\tCHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tANN[0].GENE\tANN[0].GENEID\tANN[0].FEATUREID\tANN[0].EFFECT\tANN[0].IMPACT\tANN[0].HGVS_C\tANN[0].HGVS_P\tANN[0].CDNA_POS\tANN[0].CDS_POS\tANN[0].AA_POS\tGEN[0].GT\tGEN[0].AD\tGEN[0].DP\tGEN[0].GQ\tGEN[1].GT\tGEN[1].AD\tGEN[1].DP\tGEN[1].GQ\tGEN[2].GT\tGEN[2].AD\tGEN[2].DP\tGEN[2].GQ"
+# Raw header (ANN_RAW)
+HEADER_RAW="inheritance\tCHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tANN_RAW\tGEN[0].GT\tGEN[0].AD\tGEN[0].DP\tGEN[0].GQ\tGEN[1].GT\tGEN[1].AD\tGEN[1].DP\tGEN[1].GQ\tGEN[2].GT\tGEN[2].AD\tGEN[2].DP\tGEN[2].GQ"
 
 make_regions () {
   local tsv="$1"
@@ -56,8 +65,6 @@ make_regions () {
       for (i=1; i<=NF; i++) {
         if ($i=="CHROM") c=i;
         if ($i=="POS")   p=i;
-        if ($i=="REF")   r=i;
-        if ($i=="ALT")   a=i;
       }
       if (!c || !p) { print "ERROR: CHROM/POS not found in header" > "/dev/stderr"; exit 2 }
       next
@@ -70,6 +77,8 @@ for m in "${MODELS[@]}"; do
   pass_tsv="$EVID_DIR/${m}_evidence_pass.tsv"
   regions="$OUT_DIR/${m}.regions.tsv"
   sub_vcf="$OUT_DIR/${m}.subset.snpeff.vcf.gz"
+
+  out_raw="$OUT_DIR/${m}_raw.tsv"
   out_tsv="$OUT_DIR/${m}_annotated.tsv"
 
   if [[ ! -f "$pass_tsv" ]]; then
@@ -89,11 +98,23 @@ for m in "${MODELS[@]}"; do
   tabix -p vcf "$sub_vcf"
   echo "    subset variants: $(bcftools view -H "$sub_vcf" | wc -l)" | tee -a "$LOG"
 
-  echo "[3] Export TSV" | tee -a "$LOG"
+  echo "[3] Export RAW TSV (ANN_RAW)" | tee -a "$LOG"
   {
-    echo -e "$HEADER"
+    echo -e "$HEADER_RAW"
     bcftools query -f "$QFMT" "$sub_vcf" | awk -v m="$m" 'BEGIN{FS=OFS="\t"} {print m, $0}'
-  } > "$out_tsv"
+  } > "$out_raw"
+  echo "    wrote: $out_raw (rows=$(($(wc -l < "$out_raw")-1)))" | tee -a "$LOG"
+
+  echo "[4] Parse ANN_RAW -> annotated TSV" | tee -a "$LOG"
+  python3 "$ANN_PARSER" "$out_raw" "$out_tsv"
+
+  # quick sanity check: does ANN[0].GENE contain a pipe?
+  if awk -F'\t' 'NR==1{for(i=1;i<=NF;i++) if($i=="ANN[0].GENE") gi=i; next} NR==2{ if(gi>0 && $gi ~ /\|/) exit 1 }' "$out_tsv"; then
+    echo "    annotated OK: $out_tsv" | tee -a "$LOG"
+  else
+    echo "ERROR: Parsed gene field still contains '|' (ANN parsing failed). File: $out_tsv" | tee -a "$LOG"
+    exit 1
+  fi
 
   echo "    wrote: $out_tsv (rows=$(($(wc -l < "$out_tsv")-1)))" | tee -a "$LOG"
 done
