@@ -19,7 +19,7 @@ import logging
 from typing import Dict, Optional
 
 PAIRS_TSV = "results/16_comphet/comphet_pairs_strict.tsv"
-VARIANTS_TSV = "results/14_clinvar/comphet_variants_rare_af0.001_clinvar.tsv"
+VARIANTS_TSV = "results/14_clinvar/comphet_variants_functional.gnomad_clinvar.tsv"
 OUT_DIR = "results/17_comphet"
 OUT_TSV = os.path.join(OUT_DIR, "comphet_pairs_with_evidence.tsv")
 
@@ -244,51 +244,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-
-head -n 1 results/16_comphet/comphet_pairs_strict.tsv
-cut -f2-3 results/16_comphet/comphet_pairs_strict.tsv | head
-# или точнее:
-awk -F'\t' 'NR==1{for(i=1;i<=NF;i++) if($i=="paternal_vid") p=i; if($i=="maternal_vid") m=i; next}
-NR<=6{print $p"\n"$m}' results/16_comphet/comphet_pairs_strict.tsv
-
-
-head -n 1 results/14_clinvar/comphet_variants_rare_af0.001_clinvar.tsv
-awk -F'\t' 'NR==1{for(i=1;i<=NF;i++) if($i=="_vid") v=i; next}
-NR<=10{print $v}' results/14_clinvar/comphet_variants_rare_af0.001_clinvar.tsv
-
-
-python3 - <<'PY'
-import csv
-
-pairs="results/16_comphet/comphet_pairs_strict.tsv"
-vars="results/14_clinvar/comphet_variants_rare_af0.001_clinvar.tsv"
-
-def read_vids_pairs(path):
-    vids=set()
-    with open(path, newline='', encoding='utf-8') as f:
-        r=csv.DictReader(f, delimiter='\t')
-        for row in r:
-            vids.add((row.get("paternal_vid") or "").strip())
-            vids.add((row.get("maternal_vid") or "").strip())
-    vids.discard("")
-    return vids
-
-def read_vids_vars(path):
-    vids=set()
-    with open(path, newline='', encoding='utf-8') as f:
-        r=csv.DictReader(f, delimiter='\t')
-        for row in r:
-            vids.add((row.get("_vid") or "").strip())
-    vids.discard("")
-    return vids
-
-p=read_vids_pairs(pairs)
-v=read_vids_vars(vars)
-print("pairs unique vids:", len(p))
-print("variants vids:", len(v))
-print("intersection:", len(p & v))
-print("example only-in-pairs:", list(sorted(p - v))[:5])
-print("example only-in-variants:", list(sorted(v - p))[:5])
-PY
