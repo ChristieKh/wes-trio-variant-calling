@@ -60,7 +60,7 @@ for fn in os.listdir(IN_DIR):
     in_path = os.path.join(IN_DIR, fn)
     out_path = os.path.join(
         OUT_DIR,
-        fn.replace("_annotated_gnomad.tsv", f"_rare_af{thr}.tsv"),
+        fn.replace("_functional.gnomad.tsv", f"_rare_af{thr}.tsv"),
     )
 
     total = kept = af_missing = 0

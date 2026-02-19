@@ -5,7 +5,7 @@ IN_DIR="results/13B_gnomad_filtered"
 CLINVAR_VCF="data/clinvar/clinvar.vcf.gz"
 OUT_DIR="results/14_clinvar"
 LOG_DIR="logs"
-PATTERN="${PATTERN:-*rare*.tsv}"   # keeps old behavior if nothing is passed
+PATTERN="${PATTERN:-*rare*.tsv}" 
 
 # Parse optional CLI args (override defaults)
 while [[ $# -gt 0 ]]; do
