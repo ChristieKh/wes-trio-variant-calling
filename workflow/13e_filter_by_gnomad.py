@@ -4,7 +4,7 @@ import os
 import logging
 from typing import Optional
 
-IN_DIR = "results/13_gnomad"
+IN_DIR = "results/13_gnomad/final_results"
 OUT_DIR = "results/13B_gnomad_filtered"
 LOG_FILE = "logs/13B_gnomad_filter.log"
 
@@ -16,41 +16,26 @@ THRESHOLDS = {
     "comphet": 1e-3,
 }
 
-# -----------------------
-# Logging setup
-# -----------------------
 os.makedirs("logs", exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_FILE, encoding="utf-8"),
-        logging.StreamHandler()
-    ]
+    handlers=[logging.FileHandler(LOG_FILE, encoding="utf-8"), logging.StreamHandler()],
 )
-
 logger = logging.getLogger("step13B")
 
-# -----------------------
-# Helpers
-# -----------------------
 
 def parse_float(x: str) -> Optional[float]:
-    if not x or x == ".":
+    if x is None:
+        return None
+    x = str(x).strip()
+    if x == "" or x == ".":
         return None
     try:
         return float(x)
-    except:
+    except ValueError:
         return None
 
-def max_af(row) -> Optional[float]:
-    vals = [
-        parse_float(row.get("gnomAD_exome_af")),
-        parse_float(row.get("gnomAD_genome_af")),
-        parse_float(row.get("gnomAD_faf95_popmax")),
-    ]
-    vals = [v for v in vals if v is not None]
-    return max(vals) if vals else None
 
 def model_from_filename(fn: str) -> str:
     for m in THRESHOLDS.keys():
@@ -58,18 +43,15 @@ def model_from_filename(fn: str) -> str:
             return m
     return "unknown"
 
-# -----------------------
-# Main
-# -----------------------
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
-logger.info("=== Step 13B: gnomAD rare filtering ===")
+logger.info("=== Step 13B: gnomAD rare filtering (using gnomAD_AF) ===")
 logger.info(f"Input dir : {IN_DIR}")
 logger.info(f"Output dir: {OUT_DIR}")
 
 for fn in os.listdir(IN_DIR):
-    if not fn.endswith("_annotated_gnomad.tsv"):
+    if not fn.endswith("_functional.gnomad.tsv"):
         continue
 
     model = model_from_filename(fn)
@@ -78,47 +60,52 @@ for fn in os.listdir(IN_DIR):
     in_path = os.path.join(IN_DIR, fn)
     out_path = os.path.join(
         OUT_DIR,
-        fn.replace("_annotated_gnomad.tsv", f"_rare_maxaf{thr}.tsv")
+        fn.replace("_annotated_gnomad.tsv", f"_rare_af{thr}.tsv"),
     )
 
-    total = kept = api_errors = 0
+    total = kept = af_missing = 0
 
-    with open(in_path, newline="", encoding="utf-8") as fin, \
-         open(out_path, "w", newline="", encoding="utf-8") as fout:
-
+    with open(in_path, newline="", encoding="utf-8") as fin, open(
+        out_path, "w", newline="", encoding="utf-8"
+    ) as fout:
         r = csv.DictReader(fin, delimiter="\t")
-        fields = r.fieldnames + ["gnomAD_max_af", "gnomAD_filter"]
+        if r.fieldnames is None:
+            raise SystemExit(f"ERROR: no header in {in_path}")
+
+        # sanity check
+        if "gnomAD_AF" not in r.fieldnames:
+            raise SystemExit(
+                f"ERROR: {in_path} missing gnomAD_AF column. Found columns: {r.fieldnames}"
+            )
+
+        fields = list(r.fieldnames)
+        if "gnomAD_max_af" not in fields:
+            fields.append("gnomAD_max_af")
+        if "gnomAD_filter" not in fields:
+            fields.append("gnomAD_filter")
 
         w = csv.DictWriter(fout, fieldnames=fields, delimiter="\t", extrasaction="ignore")
         w.writeheader()
 
         for row in r:
             total += 1
-            status = row.get("gnomAD_status", "")
-            maf = max_af(row)
-
-            row["gnomAD_max_af"] = "." if maf is None else f"{maf:.6g}"
-
-            if status == "OK":
-                keep = (maf is None) or (maf <= thr)
-                row["gnomAD_filter"] = "PASS" if keep else "FAIL"
-
-            elif status == "NOT_FOUND":
+            af = parse_float(row.get("gnomAD_AF"))
+            if af is None:
+                af_missing += 1
+                row["gnomAD_max_af"] = "."
+                row["gnomAD_filter"] = "PASS_NO_GNOMAD"
                 keep = True
-                row["gnomAD_filter"] = "PASS"
-
             else:
-                keep = True
-                row["gnomAD_filter"] = "API_ERROR"
-                api_errors += 1
+                row["gnomAD_max_af"] = f"{af:.6g}"
+                keep = af <= thr
+                row["gnomAD_filter"] = "PASS" if keep else "FAIL"
 
             if keep:
                 kept += 1
                 w.writerow(row)
 
     logger.info(
-        f"[{model}] {fn}: kept {kept}/{total} "
-        f"(thr={thr}, api_errors={api_errors}) -> {out_path}"
+        f"[{model}] {fn}: kept {kept}/{total} (thr={thr}, no_gnomad={af_missing}) -> {out_path}"
     )
 
 logger.info("Step 13B complete.")

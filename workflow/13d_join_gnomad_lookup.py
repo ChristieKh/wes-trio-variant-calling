@@ -9,10 +9,10 @@ exact key: CHROM+POS+REF+ALT (chr prefix is normalized away on both sides).
 - Prints matched/unmatched stats.
 
 Usage:
-  python3 workflow/13b_join_gnomad_lookup.py \
-    --in results/12_model_tables/ar_homo_functional.tsv \
+  python3 workflow/13d_join_gnomad_lookup.py \
+    --in results/12_model_tables/x_linked_functional.tsv \
     --lookup results/13_gnomad/gnomad_exomes_v4_lookup.tsv \
-    --out results/13_gnomad/ar_homo_functional.gnomad.tsv
+    --out results/13_gnomad/final_results/x_linked_functional.gnomad.tsv
 """
 import argparse
 import csv
