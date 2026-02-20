@@ -8,16 +8,6 @@ IN_DIR = "results/14_clinvar"
 OUT_DIR = "results/15_shortlists"
 LOG_FILE = "logs/15_shortlists.log"
 
-os.makedirs(OUT_DIR, exist_ok=True)
-os.makedirs("logs", exist_ok=True)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler(LOG_FILE, encoding="utf-8"), logging.StreamHandler()],
-)
-log = logging.getLogger("step15")
-
 TOP_N = 200
 
 DROP_EFFECT_SUBSTR = (
@@ -30,12 +20,21 @@ DROP_EFFECT_SUBSTR = (
     "non_coding_transcript",
 )
 
-API_ERROR_STATUSES = {"GRAPHQL_ERROR", "HTTP_ERROR", "ERROR", "TIMEOUT"}
+os.makedirs(OUT_DIR, exist_ok=True)
+os.makedirs("logs", exist_ok=True)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.FileHandler(LOG_FILE, encoding="utf-8"), logging.StreamHandler()],
+)
+log = logging.getLogger("step15")
+
 
 def parse_float(x: str) -> Optional[float]:
     if x is None:
         return None
-    x = x.strip()
+    x = str(x).strip()
     if x in ("", "."):
         return None
     try:
@@ -43,17 +42,21 @@ def parse_float(x: str) -> Optional[float]:
     except Exception:
         return None
 
+
 def gt_norm(gt: str) -> str:
     return (gt or "").replace("|", "/")
 
+
 def gt_is_hom_alt(gt: str) -> bool:
     return gt_norm(gt) == "1/1"
+
 
 def gq_int(x: str) -> int:
     try:
         return int(float(x))
     except Exception:
         return 0
+
 
 def gq_sum(row: Dict[str, str]) -> int:
     return (
@@ -62,15 +65,20 @@ def gq_sum(row: Dict[str, str]) -> int:
         gq_int(row.get("GEN[2].GQ", "0"))
     )
 
+
 def should_drop_by_effect(effect: str) -> bool:
     t = (effect or "").lower()
     return any(k in t for k in DROP_EFFECT_SUBSTR)
 
+
 def impact_rank(imp: str) -> int:
     return {"HIGH": 3, "MODERATE": 2, "LOW": 1, "MODIFIER": 0}.get((imp or "").upper(), 0)
 
+
 def clinvar_bucket(sig: str) -> str:
     s = (sig or "").lower()
+    if s in ("", "."):
+        return "none"
     if "conflicting" in s:
         return "conflicting"
     if "benign" in s and "pathogenic" not in s:
@@ -81,7 +89,8 @@ def clinvar_bucket(sig: str) -> str:
         return "pathogenic"
     if "uncertain" in s or "vus" in s:
         return "vus"
-    return "none"
+    return "other"
+
 
 def clinvar_rank(sig: str) -> int:
     b = clinvar_bucket(sig)
@@ -90,36 +99,47 @@ def clinvar_rank(sig: str) -> int:
         "likely_pathogenic": 3,
         "vus": 1,
         "conflicting": 1,
+        "other": 0,
         "none": 0,
         "benign": -2,
     }.get(b, 0)
 
-def max_af(row) -> Optional[float]:
+
+def max_af(row: Dict[str, str]) -> Optional[float]:
+    # Your schema: gnomAD_max_af (from your filter step) and/or gnomAD_AF (from UCSC lookup)
     vals = [
-        parse_float(row.get("gnomAD_exome_af", ".")),
-        parse_float(row.get("gnomAD_genome_af", ".")),
-        parse_float(row.get("gnomAD_faf95_popmax", ".")),
-        parse_float(row.get("gnomAD_max_af", ".")),  # if already computed
+        parse_float(row.get("gnomAD_max_af", ".")),
+        parse_float(row.get("gnomAD_AF", ".")),
     ]
     vals = [v for v in vals if v is not None]
     return max(vals) if vals else None
 
-def api_penalty(row: Dict[str, str]) -> int:
-    # Slight penalty so API_ERROR doesn't dominate TopN
-    st = (row.get("gnomAD_status") or "").strip()
-    return -1 if st in API_ERROR_STATUSES else 0
 
-def sort_key(row: Dict[str, str]) -> Tuple[int, int, float, int, int]:
+def sort_key(row: Dict[str, str]) -> Tuple[int, int, int, float, int]:
+    """
+    Higher is better (we sort reverse=True).
+    Priority:
+      1) ClinVar rank
+      2) Impact rank
+      3) Known AF beats unknown AF (unknown shouldn't dominate topN)
+      4) Smaller AF is better
+      5) Higher trio GQ sum is better
+    """
     maf = max_af(row)
-    maf_sort = 0.0 if maf is None else maf          # None treated as rare (best)
+    maf_known = 1 if maf is not None else 0
+
+    # Smaller AF should rank higher -> use negative maf in descending sort
+    maf_score = -maf if maf is not None else 0.0  # unknown -> neutral, but maf_known=0 will push it down
+
     imp = (row.get("ANN[0].IMPACT") or "").strip().upper()
     return (
         clinvar_rank(row.get("ClinVar_CLNSIG", ".")),
         impact_rank(imp),
-        -maf_sort,                                  # smaller AF => larger key
+        maf_known,
+        maf_score,
         gq_sum(row),
-        api_penalty(row),
     )
+
 
 def write_tsv(path: str, header: List[str], rows: List[Dict[str, str]]):
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -127,6 +147,15 @@ def write_tsv(path: str, header: List[str], rows: List[Dict[str, str]]):
         w = csv.DictWriter(out, fieldnames=header, delimiter="\t", extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)
+
+
+def detect_model(rows: List[Dict[str, str]], fn: str) -> str:
+    # Prefer "inheritance" if present; else fallback to filename stem
+    m = (rows[0].get("inheritance") or "").strip()
+    if m:
+        return m
+    return fn.replace("_clinvar.tsv", "")
+
 
 def main():
     summary_lines = []
@@ -144,13 +173,13 @@ def main():
         if not rows:
             continue
 
-        model = (rows[0].get("inheritance") or "").strip() or fn.replace("_clinvar.tsv", "")
+        model = detect_model(rows, fn)
         model_dir = os.path.join(OUT_DIR, model)
         os.makedirs(model_dir, exist_ok=True)
 
         total = len(rows)
 
-        # Keep PASS and API_ERROR, but drop explicit FAIL if present
+        # Drop explicit gnomAD FAIL if present
         pass_rows = []
         for x in rows:
             gf = (x.get("gnomAD_filter") or "").strip()
@@ -158,7 +187,7 @@ def main():
                 continue
             pass_rows.append(x)
 
-        # Optional model-specific sanity: ar_homo must be hom-alt in proband
+        # Model-specific sanity: ar_homo must be hom-alt in proband
         if model == "ar_homo":
             pass_rows = [x for x in pass_rows if gt_is_hom_alt(x.get("GEN[2].GT", ""))]
 
@@ -191,7 +220,6 @@ def main():
             f"{stem} | model={model} total={total} kept_after_gnomad={len(pass_rows)} cleaned={len(cleaned)} "
             f"clinvar_path={len(cv_path)} clinvar_conflicting={len(cv_conf)} high={len(imp_high)} moderate={len(imp_mod)} top={len(topn)}"
         )
-
         log.info(summary_lines[-1])
 
     summary_path = os.path.join(OUT_DIR, "summary_step15.txt")
@@ -200,6 +228,7 @@ def main():
 
     log.info(f"Wrote summary -> {summary_path}")
     log.info(f"Log -> {LOG_FILE}")
+
 
 if __name__ == "__main__":
     main()
