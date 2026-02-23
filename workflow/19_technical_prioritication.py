@@ -45,31 +45,39 @@ def impact_score(imp: str) -> int:
 
 def clinvar_score(sig: str) -> int:
     s = (sig or "").lower()
-    # NOTE: "likely pathogenic" sometimes appears as "Likely_pathogenic" etc.
-    if "pathogenic" in s and "likely" not in s:
-        return 6
-    if "likely_pathogenic" in s or ("likely" in s and "pathogenic" in s):
-        return 4
-    if "vus" in s or "uncertain" in s:
+
+    if "conflicting" in s:
+        return 1   # treat as VUS-like
+    if "uncertain" in s or "vus" in s:
         return 1
+    if "likely benign" in s or "likely_benign" in s:
+        return -2
     if "benign" in s:
         return -4
+    if "likely pathogenic" in s or "likely_pathogenic" in s:
+        return 4
+    if "pathogenic" in s:
+        return 6
+
     return 0
 
 def clinvar_bucket(sig: str) -> str:
-    s = (sig or "").strip()
-    if s in ("", "."):
-        return "NONE"
-    low = s.lower()
-    if "pathogenic" in low and "likely" not in low:
-        return "PATHOGENIC"
-    if "likely" in low and "pathogenic" in low:
-        return "LIKELY_PATHOGENIC"
-    if "benign" in low:
-        return "BENIGN"
-    if "vus" in low or "uncertain" in low or "conflicting" in low:
+    s = (sig or "").lower()
+
+    if "conflicting" in s:
         return "VUS_OR_OTHER"
-    return "VUS_OR_OTHER"
+    if "uncertain" in s or "vus" in s:
+        return "VUS_OR_OTHER"
+    if "likely_benign" in s or "likely benign" in s:
+        return "BENIGN"
+    if "benign" in s:
+        return "BENIGN"
+    if "likely_pathogenic" in s:
+        return "LIKELY_PATHOGENIC"
+    if "pathogenic" in s:
+        return "PATHOGENIC"
+
+    return "NONE"
 
 def af_score(af: Optional[float]) -> int:
     if af is None:

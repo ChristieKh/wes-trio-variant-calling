@@ -70,18 +70,31 @@ def impact_rank(x: str) -> int:
 
 def clinvar_signal(clnsig: str) -> str:
     """
-    Returns one of: PATHOGENIC, BENIGN, VUS_OR_OTHER, NONE
+    Returns one of: PATHOGENIC, LIKELY_PATHOGENIC, BENIGN, VUS_OR_OTHER, NONE
     """
     s = (clnsig or "").strip()
-    if s == "" or s == ".":
+    if s in ("", "."):
         return "NONE"
     low = s.lower()
-    # quick normalization: ClinVar may contain pipe/semicolon-separated values
-    # We just look for key tokens.
-    if any(tok in low for tok in PATHOGENIC_TOKENS):
-        return "PATHOGENIC"
-    if any(tok in low for tok in BENIGN_TOKENS):
+
+    # IMPORTANT: handle misleading strings first
+    if "conflicting" in low:
+        return "VUS_OR_OTHER"
+    if "uncertain" in low or "vus" in low:
+        return "VUS_OR_OTHER"
+
+    # benign first (so "likely_benign" doesn't get caught by "benign" later incorrectly)
+    if "likely_benign" in low or "likely benign" in low:
         return "BENIGN"
+    if "benign" in low:
+        return "BENIGN"
+
+    # pathogenic
+    if "likely_pathogenic" in low or "likely pathogenic" in low:
+        return "LIKELY_PATHOGENIC"
+    if "pathogenic" in low:
+        return "PATHOGENIC"
+
     return "VUS_OR_OTHER"
 
 def compute_tier(pair_has_damaging: str, pair_top_impact: str) -> str:
@@ -139,9 +152,11 @@ def main() -> None:
         pat_sig = clinvar_signal(row.get("pat_ClinVar_CLNSIG", "."))
         mat_sig = clinvar_signal(row.get("mat_ClinVar_CLNSIG", "."))
 
-        # "any" signal: PATHOGENIC wins, then VUS, then BENIGN, then NONE
+        # "any" signal: PATHOGENIC wins, then LIKELY_PATHOGENIC, then VUS, then BENIGN, then NONE
         if "PATHOGENIC" in (pat_sig, mat_sig):
             any_sig = "PATHOGENIC"
+        elif "LIKELY_PATHOGENIC" in (pat_sig, mat_sig):
+            any_sig = "LIKELY_PATHOGENIC"
         elif "VUS_OR_OTHER" in (pat_sig, mat_sig):
             any_sig = "VUS_OR_OTHER"
         elif "BENIGN" in (pat_sig, mat_sig):
