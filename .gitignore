@@ -6,12 +6,19 @@
 
 data/
 ref/
-results/**/*.bam
-results/**/*.bai
-results/**/*.vcf
-results/**/*.vcf.gz
-results/**/*.tbi
-results/
+
+# Ignore everything in results
+results/*
+
+# But allow interpretation and phenotype summaries
+!results/20_phenotype/
+!results/20_phenotype/*.tsv
+
+!results/21_interpretation/
+!results/21_interpretation/*.md
+
+!results/19_master/master_scored_top100.tsv
+
 
 # fastq 
 *.fastq

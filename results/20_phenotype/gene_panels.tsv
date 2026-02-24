@@ -1,0 +1,18 @@
+gene	category	weight	comment
+GBE1	glycogen_metabolism	8	GSD IV (Andersen); hepatic glycogen accumulation; AR; liver involvement
+PGM1	glycogen_metabolism	7	Glycogen synthesis disorder; hepatopathy possible
+SLC37A4	glycogen_metabolism	7	GSD Ib; glucose-6-phosphate transport; liver involvement
+PHKG2	glycogen_metabolism	7	GSD IXc; liver phosphorylase kinase deficiency
+PYGL	glycogen_metabolism	7	GSD VI (Hers disease); hepatic glycogen accumulation
+HNF4A	glycogen_metabolism	5	Transcription factor; liver metabolism regulation
+AKT2	glycogen_metabolism	4	Insulin signaling; indirect glycogen pathway involvement
+FOCAD	glycogen_metabolism	3	Reported association; limited direct glycogen evidence
+SHARPIN	glycogen_metabolism	3	Limited evidence; secondary metabolic effects
+AIFID   glycogen_metabolism	3	Limited evidence; secondary metabolic effects 
+SIPL1   glycogen_metabolism	3	Limited evidence; secondary metabolic effects 
+FARS2	glycogen_metabolism	3	Mitochondrial disease; possible metabolic overlap
+NPC1	lysosomal_storage	6	Niemann-Pick type C; foam cells; hepatosplenomegaly
+NPC2	lysosomal_storage	6	Niemann-Pick type C; foam cells; hepatosplenomegaly
+SMPD1	lysosomal_storage	6	Niemann-Pick A/B; lipid storage; foam cells
+LIPA	lysosomal_storage	6	Lysosomal acid lipase deficiency; lipid storage; hepatomegaly
+NEU1	lysosomal_storage	5	Sialidosis; lysosomal storage; foam cells possible
