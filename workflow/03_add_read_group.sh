@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# EDIT THESE PATHS
 IN_DIR="results/bam"  
 OUT_DIR="results/readgroups"
 LOG_DIR="logs"
 
 mkdir -p "${OUT_DIR}" "${LOG_DIR}"
 
+echo "[03] Adding read groups"
 
-SAMPLES=("father" "mother" "proband")
+for SAMPLE in father mother proband; do
 
-for SAMPLE in "${SAMPLES[@]}"; do
   IN_BAM="${IN_DIR}/${SAMPLE}.sorted.bam"
   OUT_BAM="${OUT_DIR}/${SAMPLE}.sorted.rg.bam"
   LOG="${LOG_DIR}/${SAMPLE}.03_add_rg.log"
@@ -31,7 +30,11 @@ for SAMPLE in "${SAMPLES[@]}"; do
     > "${LOG}" 2>&1
 
   # quick sanity check: RG exists
-  samtools view -H "${OUT_BAM}" | grep -q "^@RG" || { echo "ERROR: no @RG in ${OUT_BAM}" >&2; exit 1; }
+  samtools view -H "${OUT_BAM}" | grep -q "^@RG" || { 
+    echo "ERROR: no @RG in ${OUT_BAM}" >&2; exit 1; 
+  }
+
+  echo "[03] ${SAMPLE} — OK"
 done
 
-echo "Step [03] Is Done."
+echo "Step [03] completed."
