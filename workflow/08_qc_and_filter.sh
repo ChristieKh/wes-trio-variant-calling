@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VCF_IN="results/vcf/trio.raw.vcf.gz"
-VCF_OUT="results/vcf/trio.filtered.vcf.gz"
+VCF_IN="results/06_vcf/trio.raw.vcf.gz"
+VCF_OUT="results/06_vcf/trio.filtered.vcf.gz"
 LOG_DIR="logs"
-QC_DIR="results/qc"
+QC_DIR="results/08_qc"
 
 LOG="${LOG_DIR}/08_qc_filter.log"
 

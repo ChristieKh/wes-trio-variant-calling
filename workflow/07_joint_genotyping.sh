@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REF="ref/GRCh38.fa"
-VCF_DIR="results/vcf"
+VCF_DIR="results/06_vcf"
 LOG_DIR="logs"
 
 mkdir -p "${LOG_DIR}"

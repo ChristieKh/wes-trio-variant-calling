@@ -3,7 +3,7 @@ set -euo pipefail
 
 REF="ref/GRCh38.fa"
 IN_DIR="results/bqsr"
-OUT_DIR="results/vcf"
+OUT_DIR="results/06_vcf"
 LOG_DIR="logs"
 
 mkdir -p "${OUT_DIR}" "${LOG_DIR}"
