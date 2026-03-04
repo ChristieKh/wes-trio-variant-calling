@@ -1,0 +1,20 @@
+funnel	step	label	file	count	notes
+global	06	Joint VCF (raw)	results/06_vcf/trio.raw.vcf.gz	696572	All variants after joint genotyping
+global	06	Joint VCF (baseline filtered)	results/06_vcf/trio.filtered.vcf.gz	164170	Non-missing GT + DP>=10 + GQ>=20 (applied per workflow baseline QC)
+ar_homo	10	AR homo (evidence-pass)	results/10_candidates_evidence/ar_homo_evidence_pass.tsv	4989	After trio logic + ALT read + AB thresholds
+ar_homo	12	AR homo model table (raw)	results/12_model_tables/ar_homo_raw.tsv	4990	Model-structured table
+ar_homo	12	AR homo functional	results/12_model_tables/ar_homo_functional.tsv	473	Coding/splice-impact variants only
+ar_homo	13B	AR homo rare (AF<0.001)	results/13B_gnomad_filtered/ar_homo_rare_af0.001.tsv	19	gnomAD rare threshold
+ar_homo	14	AR homo + ClinVar	results/14_clinvar/ar_homo_variants_rare_af0.001_clinvar.tsv	19	ClinVar annotation
+comphet	16	Comp-het candidate pairs	results/16_comphet/comphet_pairs_candidate.tsv	353	Initial gene-level pairing
+comphet	16	Comp-het strict pairs	results/16_comphet/comphet_pairs_strict.tsv	353	Strict segregation enforcement
+comphet	17	Comp-het evidence pass	results/17_comphet/comphet_pairs_with_evidence.tsv	353	Read-level support validated
+comphet	13B	Comp-het rare (AF<0.001)	results/13B_gnomad_filtered/comphet_variants_rare_af0.001.tsv	80	Population frequency filter
+comphet	14	Comp-het + ClinVar	results/14_clinvar/comphet_rare_af0.001_clinvar.tsv	80	Clinical annotation (no additional filtering)
+comphet	18	Comp-het priority (Tier 1 & 2)	results/18_shortlists/comphet_pairs_priority.tsv	42	Technical prioritization
+secondary	10	De novo (evidence-pass)	results/10_candidates_evidence/de_novo_evidence_pass.tsv	121	Secondary model
+secondary	13B	De novo rare (AF < 1e-4)	results/14_clinvar/de_novo_rare_af0.0001.tsv	1	Ultra-rare threshold
+secondary	10	X-linked (evidence-pass)	results/10_candidates_evidence/x_linked_evidence_pass.tsv	388	Secondary model
+secondary	13B	X-linked rare (AF < 1e-4)	results/14_clinvar/x_linked_rare_af0.0001.tsv	5	Ultra-rare threshold
+technical	19	Technical prioritized candidates	results/20_technical_prioritixation/master_scored_all.tsv	67	Ranking after technical scoring (no phenotype refinement)
+final	20	Final phenotype-guided shortlist	results/20_interpretation/final_shortlist.tsv	20	Manual + phenotype-based refinement
