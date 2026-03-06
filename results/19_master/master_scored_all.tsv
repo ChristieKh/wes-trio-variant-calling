@@ -1,0 +1,68 @@
+kind	model	gene	key	score	impact	clinvar	af	tier	source
+pair	comphet	DENND4B	DENND4B|chr1-153934829-G-GC|chr1-153934248-C-G	10	HIGH	VUS_OR_OTHER	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	FHAD1	FHAD1|chr1-15374592-C-T|chr1-15369450-C-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	KDM4A	KDM4A|chr1-43671586-C-A|chr1-43660291-CA-C	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	OR10J1	OR10J1|chr1-159440094-G-A|chr1-159440550-T-A	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	AVPI1	AVPI1|chr10-97679916-C-G|chr10-97679697-G-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	SLC22A24	SLC22A24|chr11-63083303-G-A|chr11-63143377-C-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	SLC22A24	SLC22A24|chr11-63083303-G-A|chr11-63143419-C-A	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	CIROP	CIROP|chr14-23104903-CA-C|chr14-23104886-GGCA-G	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	CIROP	CIROP|chr14-23104905-GCA-G|chr14-23104886-GGCA-G	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	KRTAP1-1	KRTAP1-1|chr17-41041247-G-A|chr17-41041225-G-C	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	KRTAP1-1	KRTAP1-1|chr17-41041247-G-A|chr17-41041248-GCAGCAGCTTGGCTGGCAGCAGCTGGTCTCACAGCAGCGTGGCTGGCAGGAGCTGGTCTCACAGCAGCTTGGCTGGCAGCAGCTGGAGCCGCAGGTCCCACTGGTGGAGCAGCTGGGAAATCCACAGAAGCTGGTCTGA-G	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	NXNL1	NXNL1|chr19-17455960-C-T|chr19-17455825-T-A	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	PSORS1C1	PSORS1C1|chr6-31138459-G-A|chr6-31138723-T-TC	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	CCHCR1	CCHCR1|chr6-31143348-G-A|chr6-31157480-C-A	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	CCHCR1	CCHCR1|chr6-31143371-T-A|chr6-31157480-C-A	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	UNC93A	UNC93A|chr6-167296214-G-A|chr6-167305948-G-A	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	ZC3H3	ZC3H3|chr8-143538172-T-C|chr8-143440217-G-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	ZC3H3	ZC3H3|chr8-143538865-G-A|chr8-143440217-G-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	ZC3H3	ZC3H3|chr8-143538914-T-G|chr8-143440217-G-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	ZC3H3	ZC3H3|chr8-143538921-A-T|chr8-143440217-G-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv
+variant	x_linked	NHSL2	chrX-72140219-G-A	7	MODERATE	Uncertain_significance	2.91709e-05		x_linked_variants_rare_af0.0001_clinvar.tsv
+variant	x_linked	PLXNA3	chrX-154464030-C-T	7	MODERATE	Uncertain_significance	3.19577e-05		x_linked_variants_rare_af0.0001_clinvar.tsv
+variant	ar_homo	CYP11B2	chr8-142917102-C-T	7	MODERATE	Conflicting_classifications_of_pathogenicity	3.42022e-05		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	x_linked	RBMXL3	chrX-115190226-G-A	7	MODERATE	Uncertain_significance	3.61476e-05		x_linked_variants_rare_af0.0001_clinvar.tsv
+variant	x_linked	FAM47A	chrX-34130760-CCGAGCGGAGACTGGACGTCCGACGAGTCTTGGGAGGCTG-C	6	MODERATE	.	3.78487e-06		x_linked_variants_rare_af0.0001_clinvar.tsv
+variant	ar_homo	KRT72	chr12-52591508-C-T	6	MODERATE	.	1.57342e-05		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	KRT6B	chr12-52449543-C-T	6	MODERATE	.	3.28341e-05		ar_homo_variants_rare_af0.001_clinvar.tsv
+pair	comphet	DENND4B	DENND4B|chr1-153934830-T-TGC|chr1-153934248-C-G	6	HIGH	BENIGN	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	PLEKHH1	PLEKHH1|chr14-67557417-A-T|chr14-67562401-C-A	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	ALOX15B	ALOX15B|chr17-8047076-G-A|chr17-8048560-A-G	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	FBXW10B	FBXW10B|chr17-15607574-G-A|chr17-15589096-G-A	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	MUC22	MUC22|chr6-31026476-G-A|chr6-31030100-G-C	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	MUC22	MUC22|chr6-31026635-G-A|chr6-31030100-G-C	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	MUC22	MUC22|chr6-31026858-C-T|chr6-31030100-G-C	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	MUC22	MUC22|chr6-31026953-G-A|chr6-31030100-G-C	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	MUC22	MUC22|chr6-31028009-A-G|chr6-31030100-G-C	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	MUC22	MUC22|chr6-31028537-A-G|chr6-31030100-G-C	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	MUC22	MUC22|chr6-31034750-A-G|chr6-31030100-G-C	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	CCHCR1	CCHCR1|chr6-31143348-G-A|chr6-31151121-A-T	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	CCHCR1	CCHCR1|chr6-31143371-T-A|chr6-31151121-A-T	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	HLA-C	HLA-C|chr6-31271091-C-T|chr6-31270210-C-T	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	HLA-C	HLA-C|chr6-31271091-C-T|chr6-31271999-A-C	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	HLA-C	HLA-C|chr6-31271097-C-T|chr6-31270210-C-T	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	HLA-C	HLA-C|chr6-31271097-C-T|chr6-31271999-A-C	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	HLA-C	HLA-C|chr6-31271166-C-T|chr6-31270210-C-T	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	HLA-C	HLA-C|chr6-31271166-C-T|chr6-31271999-A-C	6	MODERATE	NONE	.	T2	comphet_pairs_with_evidence.tsv
+pair	comphet	UNC93A	UNC93A|chr6-167296214-G-A|chr6-167315287-G-A	6	HIGH	BENIGN	.	T1	comphet_pairs_with_evidence.tsv
+pair	comphet	SLC7A13	SLC7A13|chr8-86214471-A-G|chr8-86214405-TCCGACATC-T	6	HIGH	BENIGN	.	T1	comphet_pairs_with_evidence.tsv
+variant	ar_homo	PKN2	chr1-88770437-C-A	5	MODERATE	.	0.000481335		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	FEZF2	chr3-62372533-G-GCCGCCA	5	MODERATE	.	0.000505425		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	POLK	chr5-75596527-A-G	5	MODERATE	.	0.000813451		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	SHARPIN	chr8-144099379-G-A	5	MODERATE	.	0.000966182		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	x_linked	ARHGAP4	chrX-153920694-C-T	4	MODERATE	Likely_benign	4.10083e-05		x_linked_variants_rare_af0.0001_clinvar.tsv
+variant	ar_homo	GBE1	chr3-81648954-C-G	4	MODERATE	Uncertain_significance	.		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	ABCA7	chr19-1044590-T-C	3	MODERATE	Benign/Likely_benign	0.000338376		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	ANKDD1B	chr5-75666988-G-A	3	HIGH	Benign	0.000706984		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	BTBD16	chr10-122336546-A-C	3	MODERATE	.	.		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	PLEKHA1	chr10-122429681-A-G	3	MODERATE	.	.		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	KNDC1	chr10-133186655-A-G	3	MODERATE	.	.		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	KNDC1	chr10-133198658-T-C	3	MODERATE	.	.		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	KNDC1	chr10-133198925-T-A	3	MODERATE	.	.		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	KRT84	chr12-52381507-A-G	3	MODERATE	.	.		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	MUC4	chr3-195784174-TCGGTGCCAGGAAGAGGGGTGGTGTCACCTGTGGATGCTGAGGAAGTGCTGGTGACAGGAAGAGGGGTGGCATGACCTGTGGATGCCGAGGAAACGTTGGTGACAGGAAGACGGGTGGTGTCACCTGTGGAAGCTGAGGAAAGGC-T	3	MODERATE	.	.		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	de_novo	MUC4	chr3-195784174-TCGGTGCCAGGAAGAGGGGTGGTGTCACCTGTGGATGCTGAGGAAGTGCTGGTGACAGGAAGAGGGGTGGCATGACCTGTGGATGCCGAGGAAACGTTGGTGACAGGAAGACGGGTGGTGTCACCTGTGGAAGCTGAGGAAAGGC-T	3	MODERATE	.	.		de_novo_variants_rare_af0.0001_clinvar.tsv
+pair	comphet	PSORS1C1	PSORS1C1|chr6-31138459-G-A|chr6-31138682-C-A	3	MODERATE	BENIGN	.	T2	comphet_pairs_with_evidence.tsv
+variant	ar_homo	ANKDD1B	chr5-75669341-C-G	1	MODERATE	Benign	0.00058897		ar_homo_variants_rare_af0.001_clinvar.tsv
+variant	ar_homo	INPP5F	chr10-119827370-A-G	-1	MODERATE	Benign	.		ar_homo_variants_rare_af0.001_clinvar.tsv

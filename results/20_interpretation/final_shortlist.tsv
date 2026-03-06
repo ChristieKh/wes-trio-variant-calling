@@ -1,0 +1,21 @@
+kind	model	gene	key	score	impact	clinvar	af	tier	source	tech_score_used	tech_score	panel_category	panel_weight	inheritance_bonus	noise_penalty	final_score	is_noisy_gene	phenotype_note
+variant	ar_homo	GBE1	chr3-81648954-C-G	4	MODERATE	Uncertain_significance	.		ar_homo_variants_rare_af0.001_clinvar.tsv	score	4	glycogen_metabolism	8	1	0	13	0	GSD IV (Andersen); hepatic glycogen accumulation; AR; liver involvement
+pair	comphet	DENND4B	DENND4B|chr1-153934829-G-GC|chr1-153934248-C-G	10	HIGH	VUS_OR_OTHER	.	T1	comphet_pairs_with_evidence.tsv	score	10	.	0	1	0	11	0	.
+pair	comphet	FHAD1	FHAD1|chr1-15374592-C-T|chr1-15369450-C-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	KDM4A	KDM4A|chr1-43671586-C-A|chr1-43660291-CA-C	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	AVPI1	AVPI1|chr10-97679916-C-G|chr10-97679697-G-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	SLC22A24	SLC22A24|chr11-63083303-G-A|chr11-63143377-C-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	SLC22A24	SLC22A24|chr11-63083303-G-A|chr11-63143419-C-A	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	CIROP	CIROP|chr14-23104903-CA-C|chr14-23104886-GGCA-G	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	CIROP	CIROP|chr14-23104905-GCA-G|chr14-23104886-GGCA-G	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	NXNL1	NXNL1|chr19-17455960-C-T|chr19-17455825-T-A	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	UNC93A	UNC93A|chr6-167296214-G-A|chr6-167305948-G-A	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	ZC3H3	ZC3H3|chr8-143538172-T-C|chr8-143440217-G-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	ZC3H3	ZC3H3|chr8-143538865-G-A|chr8-143440217-G-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	ZC3H3	ZC3H3|chr8-143538914-T-G|chr8-143440217-G-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+pair	comphet	ZC3H3	ZC3H3|chr8-143538921-A-T|chr8-143440217-G-T	9	HIGH	NONE	.	T1	comphet_pairs_with_evidence.tsv	score	9	.	0	1	0	10	0	.
+variant	ar_homo	SHARPIN	chr8-144099379-G-A	5	MODERATE	.	0.000966182		ar_homo_variants_rare_af0.001_clinvar.tsv	score	5	glycogen_metabolism	3	1	0	9	0	Limited evidence; secondary metabolic effects
+variant	ar_homo	CYP11B2	chr8-142917102-C-T	7	MODERATE	Conflicting_classifications_of_pathogenicity	3.42022e-05		ar_homo_variants_rare_af0.001_clinvar.tsv	score	7	.	0	1	0	8	0	.
+variant	x_linked	NHSL2	chrX-72140219-G-A	7	MODERATE	Uncertain_significance	2.91709e-05		x_linked_variants_rare_af0.0001_clinvar.tsv	score	7	.	0	0	0	7	0	.
+variant	x_linked	PLXNA3	chrX-154464030-C-T	7	MODERATE	Uncertain_significance	3.19577e-05		x_linked_variants_rare_af0.0001_clinvar.tsv	score	7	.	0	0	0	7	0	.
+variant	x_linked	RBMXL3	chrX-115190226-G-A	7	MODERATE	Uncertain_significance	3.61476e-05		x_linked_variants_rare_af0.0001_clinvar.tsv	score	7	.	0	0	0	7	0	.
