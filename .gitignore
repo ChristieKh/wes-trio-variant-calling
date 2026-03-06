@@ -15,9 +15,6 @@ results/*
 !results/20_*/
 !results/20_phenotype/*.tsv
 
-!results/21_interpretation/
-!results/21_interpretation/*.md
-
 
 # fastq 
 *.fastq
