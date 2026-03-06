@@ -1,0 +1,117 @@
+# Candidate Variant Interpretation
+
+This section summarizes the final candidate variants obtained after the full analytical workflow, including technical prioritization and phenotype-guided refinement.
+
+From the initial set of 67 technically supported candidates, phenotype-based evaluation reduced the candidate space to 20 variants. These candidates were manually reviewed with respect to:
+
+- inheritance consistency
+- population frequency
+- functional impact
+- clinical database annotations
+- gene–phenotype concordance
+
+Below I summarize the most relevant candidates and their biological plausibility in the context of the reported phenotype.
+
+## Candidates
+
+### 1. GBE1 (primary candidate)
+
+A homozygous missense variant in **GBE1** was identified under the autosomal recessive model and shows strong concordance with the reported phenotype of glycogen storage disease type IV.
+
+- model/kind: ar_homo, variant
+- key: `chr3-81648954-C-G`
+- impact: `MODERATE` | ClinVar: `Uncertain_significance` | gnomAD AF: `not reported / extremely rare`
+- scores: tech=4, panel=8, inh=1, noise=0, final=13
+- phenotype note: GSD IV (Andersen); hepatic glycogen accumulation; AR; liver involvement
+- IGV: [ ] proband genotype  [ ] parents segregation  [ ] coverage/artefacts
+- ACMG draft: 
+- Phenotype fit (why/why not): 
+
+#### Disease association
+GBE1 is associated with Glycogen Storage Disease type IV (Andersen disease), autosomal recessive, characterized by hepatic glycogen accumulation and progressive liver dysfunction.
+
+#### Mechanism
+GBE1 encodes glycogen branching enzyme. Loss-of-function leads to abnormal glycogen structure and storage in hepatocytes.
+
+#### Phenotype fit
++ Increased hepatic glycogen directly matches disease mechanism.
++ Liver dysfunction consistent with GSD IV.
++ AR inheritance matches homozygous model.
+- No clear neuromuscular involvement reported (if applicable).
+
+#### IGV validation ![Evidence picture](pictures/image.png)
+
+Proband: homozygous ALT (47/47 reads, 100% G, DP=47)
+Father: heterozygous (14 C / 13 G, balanced)
+Mother: heterozygous (19 C / 22 G, balanced)
+No strand bias or alignment artefacts observed.
+Segregation consistent with autosomal recessive inheritance.
+
+#### ACMG draft
+
+PM2 (variant absent from gnomAD)
+PP1 (segregation consistent with autosomal recessive inheritance)
+PP3 (multiple in silico tools predict deleterious effect)  
+PP4 (phenotype highly specific for GSD IV)
+![alt text](<pictures/Varsome_results.png>)
+
+Likely pathogenic candidate variant in GBE1.
+
+Conclusion:
+Homozygous missense variant in GBE1 (p.Arg198Thr) identified.
+Variant absent in population databases.
+Segregation consistent with AR inheritance.
+Phenotype highly specific for Glycogen Storage Disease type IV.
+Classified as likely pathogenic candidate.
+
+### 2. DENND4B (keratinocytes)
+
+- model/kind: comphet, pair
+- key: `DENND4B|chr1-153934829-G-GC|chr1-153934248-C-G`
+- impact: HIGH | ClinVar: VUS_OR_OTHER | AF: .
+- scores: tech=10, panel=0, inh=1, noise=0, final=11
+
+- No established Mendelian disease association in OMIM.
+- Gene function (RAB GEF involved in vesicle trafficking in keratinocytes) does not explain hepatic glycogen accumulation.
+- ClinVar evidence limited and conflicting.
+- No biological link to glycogen metabolism or liver storage disorders.
+
+Conclusion: Biologically implausible candidate; unlikely to explain phenotype
+
+### 3. FHAD1 (mitochondrial / metabolic processes)
+
+- model/kind: comphet, pair
+- key: `FHAD1|chr1-15374592-C-T|chr1-15369450-C-T`
+- impact: `HIGH` | ClinVar: `NONE` | AF: `.`
+- scores: tech=9, panel=0, inh=1, noise=0, final=10
+- phenotype note: .
+
+- No known Mendelian liver or glycogen storage disorder associated with FHAD1.
+- Gene function not directly linked to glycogen metabolism.
+- No supporting ClinVar or literature evidence.
+- Phenotype (hepatic glycogen accumulation, AR pattern) not explained by known FHAD1 biology.
+
+Conclusion: Low biological plausibility; unlikely primary cause.
+
+### 4. KDM4A (histone demethylase, histone demethylase)
+
+- model/kind: comphet, pair
+- key: `KDM4A|chr1-43671586-C-A|chr1-43660291-CA-C`
+- impact: `HIGH` | ClinVar: `NONE` | AF: `.`
+- scores: tech=9, panel=0, inh=1, noise=0, final=10
+- phenotype note: .
+
+- KDM4A encodes a histone demethylase involved in epigenetic regulation.
+- No known association with glycogen metabolism or hepatic storage disorders.
+- No Mendelian liver phenotype described in OMIM.
+- Phenotype does not align with known gene function.
+
+Conclusion: Functional mismatch; unlikely to explain clinical presentation.
+
+
+
+## Final conclusion
+
+Among all evaluated candidates, the homozygous missense variant in **GBE1** represents the most plausible causal variant.  
+
+The gene–phenotype concordance, inheritance pattern, and segregation evidence strongly support its role in the observed clinical presentation consistent with Glycogen Storage Disease type IV.
