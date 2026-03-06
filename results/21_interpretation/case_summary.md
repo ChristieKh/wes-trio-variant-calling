@@ -54,36 +54,46 @@ Segregation consistent with AR inheritance.
 Phenotype highly specific for Glycogen Storage Disease type IV.
 Classified as likely pathogenic candidate.
 
-### 2. DENND4B
+### 2. DENND4B (keratinocytes)
 
 - model/kind: comphet, pair
 - key: `DENND4B|chr1-153934829-G-GC|chr1-153934248-C-G`
-- impact: `HIGH` | ClinVar: `VUS_OR_OTHER` | AF: `.`
+- impact: HIGH | ClinVar: VUS_OR_OTHER | AF: .
 - scores: tech=10, panel=0, inh=1, noise=0, final=11
-- phenotype note: .
-- No established Mendelian liver/glycogen disorder in OMIM.
-- Gene function (vesicle trafficking in keratinocytes) does not explain hepatic glycogen accumulation.
-- ClinVar evidence weak/conflicting.
-Conclusion: Unlikely to explain phenotype.
 
-### 3. FHAD1
+- No established Mendelian disease association in OMIM.
+- Gene function (RAB GEF involved in vesicle trafficking in keratinocytes) does not explain hepatic glycogen accumulation.
+- ClinVar evidence limited and conflicting.
+- No biological link to glycogen metabolism or liver storage disorders.
+
+Conclusion: Biologically implausible candidate; unlikely to explain phenotype
+
+### 3. FHAD1 (mitochondrial / metabolic processes)
 
 - model/kind: comphet, pair
 - key: `FHAD1|chr1-15374592-C-T|chr1-15369450-C-T`
 - impact: `HIGH` | ClinVar: `NONE` | AF: `.`
 - scores: tech=9, panel=0, inh=1, noise=0, final=10
 - phenotype note: .
-- IGV: [ ] proband genotype  [ ] parents segregation  [ ] coverage/artefacts
-- ACMG draft: 
-- Phenotype fit (why/why not): 
 
-### 4. KDM4A
+- No known Mendelian liver or glycogen storage disorder associated with FHAD1.
+- Gene function not directly linked to glycogen metabolism.
+- No supporting ClinVar or literature evidence.
+- Phenotype (hepatic glycogen accumulation, AR pattern) not explained by known FHAD1 biology.
+
+Conclusion: Low biological plausibility; unlikely primary cause.
+
+### 4. KDM4A (histone demethylase, histone demethylase)
 
 - model/kind: comphet, pair
 - key: `KDM4A|chr1-43671586-C-A|chr1-43660291-CA-C`
 - impact: `HIGH` | ClinVar: `NONE` | AF: `.`
 - scores: tech=9, panel=0, inh=1, noise=0, final=10
 - phenotype note: .
-- IGV: [ ] proband genotype  [ ] parents segregation  [ ] coverage/artefacts
-- ACMG draft: 
-- Phenotype fit (why/why not): 
+
+- KDM4A encodes a histone demethylase involved in epigenetic regulation.
+- No known association with glycogen metabolism or hepatic storage disorders.
+- No Mendelian liver phenotype described in OMIM.
+- Phenotype does not align with known gene function.
+
+Conclusion: Functional mismatch; unlikely to explain clinical presentation.
