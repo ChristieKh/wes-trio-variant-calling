@@ -1,88 +1,98 @@
-# WES Trio Analysis — End-to-End Germline Variant Discovery Pipeline
+# WES Trio Variant Discovery (Case Study)
 
-This repository implements a reproducible **whole-exome sequencing (WES) trio workflow**
-following **GATK Best Practices**, covering the full path from raw alignment to
-candidate variant prioritization.
+This project reconstructs a **real clinical whole-exome trio analysis (PMC11748688)** to identify rare, high-confidence germline variants consistent with the reported phenotype using an inheritance-driven prioritization workflow applied to WES data from a proband and both parents.
 
-The project combines:
+## Data
+- Study: SRP490127 (NCBI SRA)
+- Samples: Trio (proband + parents)
+- Reference: GRCh38
+- Variant calling: GATK HaplotypeCaller → joint genotyping
 
-- technical pipeline engineering
-- inheritance-based filtering (trio logic)
-- population database integration
-- clinical-oriented variant prioritization
+## Project Highlights
 
-🔗 Key reference inspiration:  
-“Clinical phenotype and trio whole exome sequencing data from a patient with glycogen storage disease IV in Indonesia”  
-https://pmc.ncbi.nlm.nih.gov/articles/PMC11748688
+- **696,572 → 20 variants** through inheritance-driven filtering
+- Evaluation of **four inheritance models**: AR-homo, compound heterozygous, de novo, X-linked
+- Identification of **GBE1** as the most plausible causal candidate for Glycogen Storage Disease type IV
 
----
+## Workflow
+The pipeline performs:
+```
+FASTQ
+ ↓
+Alignment (BWA)
+ ↓
+Variant Calling (GATK)
+ ↓
+Joint VCF
+ ↓
+Trio Inheritance Models
+ ├─ AR-homo (main priority)
+ ├─ Comp-het (main priority)
+ ├─ De novo
+ └─ X-linked
+ ↓
+Functional (SnpEff) + Population Filtering (gnomAD)
+ ↓
+Clinical annotation (ClinVar)
+ ↓
+Technical Prioritization 
+ ↓
+Phenotype Refinement
+ ↓
+Final shortlist 
+```
 
-## 🔄 Pipeline overview
+Full workflow description:  
+`docs/02_pipeline_map.md`
 
-### Preprocessing (per sample)
+## Variant Filtering Funnel
 
-- Read alignment (BWA-MEM)
-- BAM sorting and indexing
-- Read group assignment (Picard)
-- Duplicate marking (Picard MarkDuplicates)
-- Base Quality Score Recalibration (GATK BQSR)
-- Variant calling in gVCF mode (GATK HaplotypeCaller)
+| Stage | Variants |
+|------|---------|
+| Joint VCF | 696,572 |
+| After QC | 164,170 |
+| AR-homo rare | 19 |
+| Comp-het rare | 80 |
+| De novo rare | 1 |
+| X-linked rare | 5 |
+| Technical candidates | 67 |
+| Final shortlist | 20 |
 
-### Joint genotyping (trio-level)
+Detailed funnel:  
+`reports/variant_funnel.md`
 
-- gVCF aggregation
-- Joint genotyping (GATK)
-- Raw multi-sample VCF generation
+## Key Finding
 
-### Variant filtering & annotation
+A homozygous missense variant in **GBE1** was identified as the most plausible causal candidate under the autosomal recessive model.  
+GBE1 is associated with **Glycogen Storage Disease type IV (Andersen disease)** and shows strong concordance with the reported phenotype.
 
-- Quality-based filtering
-- Functional annotation (SnpEff)
-- Population frequency integration (gnomAD)
-- Clinical database integration (ClinVar)
+Full interpretation:  
+`docs/03_candidate_interpretation.md`
 
-### Inheritance modeling
+## Repository Structure
+```
+docs/
+00_case_question.md
+01_quality_and_thresholds.md
+02_pipeline_map.md
+03_candidate_interpretation.md
 
-- De novo detection
-- Autosomal recessive (homozygous)
-- Compound heterozygous pairing
-- X-linked logic
+reports/
+variant_funnel.tsv
+variant_funnel.md
 
-### Candidate prioritization
+workflow/
+analysis scripts
 
-- Technical scoring
-- Population frequency thresholds
-- Phenotype-driven prioritization
+results/
+intermediate and final outputs
+```
 
----
+## What this project demonstrates
 
-## 📁 Repository structure
+- Trio-based inheritance analysis
+- Variant prioritization using population databases
+- Integration of functional and clinical annotations
+- Candidate-level interpretation using phenotype evidence
 
-- `workflow/` — step-by-step pipeline scripts (01–20)
-- `ref/` — reference genome and known-sites resources
-- `results/` — generated outputs (not version-controlled)
-- `logs/` — tool logs (not version-controlled)
-- `samples.tsv` — trio sample definitions
-- `environment.yml` — reproducible software environment
-
----
-
-## 🧬 Interpretation focus
-
-The project emphasizes:
-
-- detection of **rare, potentially pathogenic variants**
-- correct modeling of trio inheritance patterns
-- integration of population and clinical evidence
-- structured candidate shortlist generation
-
----
-
-## ⚙️ Reproducibility
-
-Each pipeline step is implemented as an individual script.
-Steps can be executed sequentially from `workflow/`.
-
-Generated results and logs are excluded from version control
-and can be reproduced by running the pipeline.
 
