@@ -6,10 +6,6 @@ import logging
 from typing import Optional, Dict, Tuple, List
 
 IN_CLINVAR = "results/14_clinvar"
-# Берём пары из Step17 (у тебя он уже 353/353), но:
-# - tier считаем на лету
-# - clinvar_any считаем на лету
-# - QC делаем по AB (если есть), потому что DP/GQ в pairs часто нет
 IN_COMP = "results/17_comphet/comphet_pairs_with_evidence.tsv"
 
 OUT_DIR = "results/19_master"
@@ -197,10 +193,10 @@ def main() -> None:
             for row in r:
                 p_total += 1
 
-                # Compute tier on the fly (because pair_tier may not exist in step17 output)
+                # Compute tier on the fly
                 tier = compute_pair_tier(row.get("pair_has_damaging", ""), row.get("pair_top_impact", ""))
 
-                # Keep only T1/T2 for master TOP (you can later keep all tiers in ALL if you want)
+                # Keep only T1/T2 for master TOP 
                 if tier not in ("T1", "T2"):
                     p_tier_skip += 1
                     continue
