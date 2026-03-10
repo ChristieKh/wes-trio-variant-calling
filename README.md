@@ -1,9 +1,9 @@
 # WES Trio Variant Discovery (Case Study)
 
-This project reconstructs a **real clinical whole-exome trio analysis (PMC11748688)** to identify rare, high-confidence germline variants consistent with the reported phenotype using an inheritance-driven prioritization workflow applied to WES data from a proband and both parents.
+This project reconstructs a **real clinical whole-exome trio analysis ([PMC11748688](https://pmc.ncbi.nlm.nih.gov/articles/PMC11748688/))** to identify rare, high-confidence germline variants consistent with the reported phenotype using an inheritance-driven prioritization workflow applied to WES data from a proband and both parents.
 
 ## Data
-- Study: SRP490127 (NCBI SRA)
+- Study: [SRP490127](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP490127&o=acc_s%3Aa) (NCBI SRA)
 - Samples: Trio (proband + parents)
 - Reference: GRCh38
 - Variant calling: GATK HaplotypeCaller → joint genotyping
